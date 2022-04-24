@@ -5,7 +5,7 @@ library(mcmc)
 #'  p <- prefEl(data = data.frame(c(1,0,1), c(0,1,1), c(1,1,1)),
 #'              priors = c(Normal(0, 1), Exp(0.5), Flat()))
 #'  p$addPref(1 %>% 2)
-#'  infer(p, estimate = "recommended")
+#'  infer(p, estimate = "MAP")
 #' @param p A BayesPrefClass instance.
 #' @param estimate The type of posterior point-estimate returned. Valid options are "recommended" (default), "MAP", and "mean".
 #' @param nbatch If using Monte Carlo estimates, the number of samples. Defaults to 1000. 
@@ -15,7 +15,14 @@ library(mcmc)
 #' @export
 infer <- function(p, estimate = "recommended", nbatch = 1000){
   # Basic escape if data missing
-  is.na(p$data) && stop("No data supplied. Populate the ``data'' field with a matrix/dataframe of your alternatives")
+  if (any(is.na(p$data))){
+    if (length(p$data) == 1) {
+      stop("No data supplied. Populate the ``data'' field with a matrix/dataframe of your alternatives")
+    } else {
+      stop("Dataframes containing NA values are not supported---filter or impute them first.")
+    }
+  }
+
   
   # Convert to a matrix object for inference
   p$data <- as.matrix(p$data)
@@ -27,7 +34,7 @@ infer <- function(p, estimate = "recommended", nbatch = 1000){
                   ".RAW_SAMPLES") || # last option used for suggestion algorithm
     stop(paste("Unknown estimate option", estimate))
   
-  if (!("list" %in% class(p$priors))) {
+  if (!(is(p$priors, "list"))) {
     # Then repeat whatever the user had N times
     p$priors <- rep(c(p$priors), ncol(p$data))
   }
@@ -36,7 +43,7 @@ infer <- function(p, estimate = "recommended", nbatch = 1000){
   ncol(p$data) == length(p$priors) || stop(paste("Found", length(p$priors), 
                                                  "prior(s) for", ncol(p$data), "dimensional data. Please supply a prior on each column."))
   
-  hasFlat <- sum(sapply(p$priors, function(x) "Flat" %in% class(x)))
+  hasFlat <- sum(sapply(p$priors, function(x) is(x, "Flat")))
   hasFlat && length(p$strict) == 0 && stop("Cannot have flat priors and no strict preferences-- see http://futurama.wikia.com/wiki/Neutral.")
   
   # Now that the arguments match, we can set the Sigma field

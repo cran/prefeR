@@ -1,25 +1,26 @@
 ### Package Status
-[![Build Status](https://travis-ci.org/jlepird/prefeR.png)](https://travis-ci.org/jlepird/prefeR)
-[![codecov.io](https://codecov.io/gh/jlepird/prefeR/coverage.svg?branch=master)](https://codecov.io/gh/jlepird/prefeR?branch=master)
+[![R](https://github.com/jlepird/prefeR/actions/workflows/r.yml/badge.svg?branch=master)](https://github.com/jlepird/prefeR/actions/workflows/r.yml)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/prefeR)](https://cran.r-project.org/package=prefeR)
 
 ### What is preference elicitation?
 Most real-world decisions must reconcile multiple, competing objectives. In buying a car, you might be concerned about cost, reliability, and performance, but before you can make a decision, you must establish the relative importance of these goals. A common mathematical approach to this problem is to define weights for each of these objectives. Although you might have a ballpark intuition for the weights, it is difficult to set them in a repeatable and defendable manner. 
 
 Preference elicitation relieves some of this burden. Instead of determining the weights directly, you make a series of pairwise comparisons between alternatives: do you prefer car A, car B, or are you indifferent? Research has shown that these pairwise comparisons are far easier to make and much easier to justify than explicitly setting the weights directly.  This package implements a preference elicitation algorithm that takes your stated preferences and uses them to calculate an optimal set of weights. It can even suggest which comparisons you should make to get the most accurate weights with the fewest number of queries. 
 
-Technical details about how this package works can be found in the article [here](http://arc.aiaa.org/doi/abs/10.2514/1.I010363). 
+Technical details about how this package works can be found in the article [here](https://arc.aiaa.org/doi/abs/10.2514/1.I010363). 
 
 ### Installation
-This package is not yet added to CRAN, but you can install it directly from Github with the ```devtools``` package. 
+This package is on CRAN, so you can install it directly through `install.packages()`.  
 ```R
-library(devtools)
-install_github("jlepird/prefeR")
+install.packages("prefeR")
 ```
 
 ### Examples
 #### Hello, World
 ```R
 library(prefeR)
+
+Sys.sleep(20)
 
 # Each column of data is a variable, i.e. objective, 
 # and each row is an alternative.
@@ -44,8 +45,6 @@ p$addPref(1 %=% 2)
 p$infer()   # maintains belief that 1 and 2 are equal
 p$rank()    # calculates the value of all three alternatives
 ```
-#### Choosing the best car in the Motor Trends dataset
-```R
-library(prefeR)
-vignette("mtcars")
-```
+## More Examples
+
+[Choosing a car from the `mtcars` dataset](https://jlepird.github.io/prefeR/articles/mtcars.html)

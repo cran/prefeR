@@ -6,7 +6,7 @@
 #' @field sigma A scalar value to use for the confusion factor (default 0.1).
 #' @field Sigma (Internal use only) A matrix of sigma * diag(ncol(data)).
 #' @field strict A list of lists of preferences. For each element x, x[[1]] > x[[2]].
-#' @field indif A list of lists of indifferences. For each element x, x[[1]] = x[[2]].
+#' @field indif A list of lists of indifference preferences. For each element x, x[[1]] = x[[2]].
 #' @field weights A vector of weights determined by the inference algorithm. 
 BayesPrefClass <- setRefClass("BayesPrefClass",
                      fields = c("data",
@@ -102,11 +102,13 @@ BayesPrefClass <- setRefClass("BayesPrefClass",
                          prefeR::suggest(.self, maxComparisons = maxComparisons) # have to be careful with namespace here
                        },
                        rank = function(){
-                         "Calculates the utilty of each row in our dataset"
-                         is.na(data) && stop("No data supplied")
+                         "Calculates the utility of each row in our dataset"
+                         any(is.na(data)) && stop("No data supplied, or data contains NA")
                          
                          # Calculate weights if we don't already have them
-                         is.na(weights) && infer()
+                         if (any(is.na(weights))) {
+                           infer()
+                         }
                          utilities <- apply(data, 1, # over rows
                                             function(x){
                                               weights %*% x
@@ -123,7 +125,6 @@ BayesPrefClass <- setRefClass("BayesPrefClass",
 #' @examples 
 #' p <- prefEl(data = data.frame(x = c(1,0,1), y = c(0, 1, 1)),
 #'             priors = c(Normal(0,1), Flat()))
-#' help(BayesPrefClass)
 #' @param data A matrix or dataframe of data. Each column should be a variable, each row an observation.
 #' @param priors A list of functions that give the prior on each variable. E.g. see help(Flat)
 #' @param  ... Other parameters to pass to the class constructor. Not recommended. 
@@ -137,7 +138,7 @@ prefEl <- function(data = NA, priors = list(), ...) BayesPrefClass(data = data, 
 #' A helper function to add in preferences in a user-friendly way. 
 #' @examples 1 %>% 2 # prefer row 1 to row 2
 #' @param  a The preferred row
-#' @param  b The nonpreferred row
+#' @param  b The non-preferred row
 #' @export
 #' @family preferences
 `%>%` <- function(a,b){
@@ -160,7 +161,7 @@ if (existsFunction("%>%")) {
 #' A helper function to add in preferences in a user-friendly way.
 #' @examples 1 %<% 2 # prefer row 2 to row 1
 #' @param  b The preferred row
-#' @param  a The nonpreferred row
+#' @param  a The non-preferred row
 #' @family preferences
 #' @export
 `%<%` <- function(a,b){
@@ -204,7 +205,7 @@ if (existsFunction("%>%")) {
   return(ret)
 }
 
-#' A convinience function for generating Normal priors.
+#' A convenience function for generating Normal priors.
 #' @examples Normal(0, 1)(1) == dnorm(1, log = TRUE)
 #' @param  mu The mean of the normal distribution
 #' @param  sigma The standard deviation of the prior
@@ -218,7 +219,7 @@ Normal <- function(mu = 0.0, sigma = 1.0){
   return(f)
 }
 
-#' A convinience function for generating Exponential priors.
+#' A convenience function for generating Exponential priors.
 #' @examples Exp(1)(1) == dexp(1,1, log = TRUE)
 #' @param  mu The mean of the exponential distribution, i.e. \eqn{1/rate}
 #' @family priors
@@ -231,7 +232,7 @@ Exp <- function(mu = 1.0){
   return(f)
 }
 
-#' A convinience function for generating a flat prior.
+#' A convenience function for generating a flat prior.
 #' @examples Flat()(1) == 0.0
 #' @family priors
 #' @export
